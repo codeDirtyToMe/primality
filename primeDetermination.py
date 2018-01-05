@@ -13,7 +13,7 @@
 #   -Added a bunch of comments so that I don't forget what the hell I've been doing.
 
 #To do:
-#       1: Compare the first 100k prime numbers a list of confirmed prime numbers in order to
+#       1: Compare the first 100k prime numbers to a list of confirmed prime numbers in order to
 #          check the validity of the program.
 #       2: Add multi-threading for crunching really large numbers.
 #           -Will I have to have threads leap frog each other? This should be fun.
