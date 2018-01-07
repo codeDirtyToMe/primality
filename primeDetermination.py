@@ -21,8 +21,8 @@
 #       confirmed that they are in fact equivalent.
 
 #To do:
-#       1: (DONE) Compare the first 100k prime numbers a list of confirmed prime numbers in order to
-#          check the validity of the program. $>diff file1 file2
+#       1: (DONE) Compare the first X prime numbers from the first 2-100k nubmers to a list of 
+#          confirmed prime numbers in order to check the validity of the program. $>diff file1 file2
 #       2: (STARTED) Add multi-threading for crunching really large numbers.
 #          Will I have to have threads leap frog each other? This should be fun.
 #       3: Possibly implement this as a function into my polymorphic cipher that I haven't
