@@ -19,10 +19,13 @@
 #   -Ability to write primes to a file for comparison was added.
 #   -After outputting primes to file, I ran "$diff primeNumbers.txt confirmedPrimes.txt -wq" and
 #       confirmed that they are in fact equivalent.
+#   -Instead of implementing threads, I started working on performance improvements.
+#       Eliminated the need to check even numbers. Execution time was 1.0901169776916504 seconds.
+#       This is a difference of 2.577037096 seconds.
 
 #To do:
-#       1: (DONE) Compare the first X prime numbers from the first 2-100k nubmers to a list of 
-#          confirmed prime numbers in order to check the validity of the program. $>diff file1 file2
+#       1: (DONE) Compare the first 100k prime numbers a list of confirmed prime numbers in order to
+#          check the validity of the program. $>diff file1 file2
 #       2: (STARTED) Add multi-threading for crunching really large numbers.
 #          Will I have to have threads leap frog each other? This should be fun.
 #       3: Possibly implement this as a function into my polymorphic cipher that I haven't
@@ -30,43 +33,52 @@
 
 import math, time, os, threading
 
+def primeCruncher(num, endNum):
+    nonPrimeNumbers = []
+    primeNumbers = []
+    # Let's time this as a single thread.
+    s = 1
+    while s <= endNum : #How many numbers to check the primality of. Divided by 2 for multiple threads.
+        # Set the ceiling of the numbers to check based on the floor of the sqrt of the num value.
+        ceiling = math.floor(math.sqrt(num))
+        while ceiling >= 1 :
+            remainder = num % ceiling #Check for remainder.
+            if remainder == 0 : #No remainder.
+                if ceiling == 1 : #Is divisible by 1.
+                    #num is prime because it wouldn't get to a ceiling of 1 unless it wasn't divisible by anything larger.
+                    primeNumbers.append(str(num))
+                    ceiling = 0 #Set ceiling to a value that will break the while loop.
+                else :
+                    nonPrimeNumbers.append(str(num))
+                    ceiling = 0 ##Set ceiling to a value that will break the while loop.
+            else :
+                # If a remainder other than zero is present after modulo division, divide num by the next lower ceiling value.
+                ceiling -= 1
+                continue
+        s += 2 #Increase the for loop counter.
+        if (num == 2) or (num % 2 == 0) :
+            num += 1 #There's no point in checking even numbers other than 2.
+        else :
+            num += 2 #If odd, try the next odd number.
+
+    return primeNumbers
+#Main###################################################################################################################
+#Spool up some threads.
+#evenThread = threading.Thread(target = primeCruncher, args = [num])
+#oddThread = threading.Thread(target = primeCruncher, args = [num + 1])
+
 num = 2       #Start at this number. Change if desired.
 endNum = 100000  #End at this number. Change if desired.
-nonPrimeNumbers = []
-primeNumbers = []
 
-#evenThread = threading.Thread(target = , args = [])
-#evenThread.start()
-#oddThread = threading.Thread(target = , args = [])
-#oddThread.start()
-
-#Let's time this as a single thread.
-startTime = time.time() #Start time recorded.
-for s in range(endNum) : #How many numbers to check the primality of.
-    # Set the ceiling of the numbers to check based on the floor of the sqrt of the num value.
-    ceiling = math.floor(math.sqrt(num))
-    while ceiling >= 1 :
-        remainder = num % ceiling #Check for remainder.
-        if remainder == 0 : #No remainder.
-            if ceiling == 1 : #Is divisible by 1.
-                #num is prime because it wouldn't get to a ceiling of 1 unless it wasn't divisible by anything larger.
-                primeNumbers.append(str(num))
-                ceiling = 0 #Set ceiling to a value that will break the while loop.
-            else :
-                nonPrimeNumbers.append(str(num))
-                ceiling = 0 ##Set ceiling to a value that will break the while loop.
-        else :
-            # If a remainder other than zero is present after modulo division, divide num by the next lower ceiling value.
-            ceiling -= 1
-            continue
-    s += 1 #Increase the for loop counter.
-    num += 1 #Test the next number in the range.
-
-stopTime = time.time() #Stop time recorded
+primeValues = []
+startTime = time.time()  # Start time recorded.
+primeValues = primeCruncher(num, endNum)
+stopTime = time.time()
 totalTime = stopTime - startTime
 
 print("Execution took: " + str(totalTime) + str(" seconds."))
 print("Formatting found primes for file comparision...")
+
 #Format results to match the list  of confirmed prime numbers. I suppose I could do this easier in the loop above.
 #However, I suspect that would hinder the performance; not that I'm all that worried about that until I start
 #the multi-threading. Whatever, we'll make it a learning experience. That and I actually enjoy doing this stuff.
@@ -83,10 +95,10 @@ a = 0
 b = 0
 #Start adding tabs and newline feeds.
 while a <= math.ceil(endNum / 10) : #Essentially, how many lines are there?
-    if len(primeNumbers[b:]) >= 10 : #If there are currently more than ten left.
-        primeFile.write("\t".join(primeNumbers[b:b + 10]) + "\n")
-    elif (len(primeNumbers[b:]) < 10) and (len(primeNumbers[b:]) > 0) : #If there are < 10 && > 0 values left.
-        primeFile.write("\t".join(primeNumbers[b:]) + "\n")
+    if len(primeValues[b:]) >= 10 : #If there are currently more than ten left.
+        primeFile.write("\t".join(primeValues[b:b + 10]) + "\n")
+    elif (len(primeValues[b:]) < 10) and (len(primeValues[b:]) > 0) : #If there are < 10 && > 0 values left.
+        primeFile.write("\t".join(primeValues[b:]) + "\n")
     else :
         break #No values left, break the loop.
 
@@ -96,4 +108,5 @@ while a <= math.ceil(endNum / 10) : #Essentially, how many lines are there?
 primeFile.close()
 print("Now, if one were to \"$diff confirmedPrimes.txt primeNumbers.txt -wq\", one should see no return. This means\ "
       "that there is a reasonable chance that this program is working as intended.")
+
 exit(0)
